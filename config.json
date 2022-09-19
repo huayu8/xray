@@ -1,91 +1,61 @@
 {
-  "api": {
-    "services": [
-      "HandlerService",
-      "LoggerService",
-      "StatsService"
-    ],
-    "tag": "api"
-  },
   "inbounds": [
-	{
-      "listen": "0.0.0.0",
+    {
+      "sniffing": {
+        "enabled": true,
+        "destOverride": ["http", "tls"]
+      },
       "port": 80,
+      "listen":"0.0.0.0",
       "protocol": "vmess",
       "settings": {
         "clients": [
           {
             "alterId": 64,
-            "id": "a43e6c89-6791-46a2-865f-5a79cf541627"
+            "security": "none",
+            "id": "b6642395-c58d-47bb-eb8c-87832271b4e7"
           }
-        ],
-        "disableInsecureEncryption": false
-      },
-      "sniffing": {
-        "destOverride": [
-          "http",
-          "tls"
-        ],
-        "enabled": true
+        ]
       },
       "streamSettings": {
         "network": "ws",
-        "security": "none",
         "wsSettings": {
-          "headers": {},
-          "path": "/"
+          "path": "/V2_PATH"
         }
-      },
-      "tag": "inbound-25678"
+      }
     }
   ],
   "outbounds": [
     {
       "protocol": "freedom",
-      "settings": {}
+      "settings": {},
+      "tag": "direct"
     },
     {
       "protocol": "blackhole",
       "settings": {},
-      "tag": "blocked"
+      "tag": "block"
     }
   ],
-  "policy": {
-    "system": {
-      "statsInboundDownlink": true,
-      "statsInboundUplink": true
-    }
-  },
-  "dns": {
-    "servers": [
-      "8.8.8.8",
-      "8.8.4.4"
-    ]
-  },
   "routing": {
+    "domainStrategy": "AsIs",
     "rules": [
       {
-        "inboundTag": [
-          "api"
-        ],
-        "outboundTag": "api",
-        "type": "field"
+        "type": "field",
+        "outboundTag": "block",
+        "protocol": ["bittorrent"]
       },
       {
+        "type": "field",
+        "outboundTag": "block",
         "ip": [
-          "geoip:private"
-        ],
-        "outboundTag": "blocked",
-        "type": "field"
-      },
-      {
-        "outboundTag": "blocked",
-        "protocol": [
-          "bittorrent"
-        ],
-        "type": "field"
+          "0.0.0.0/8",
+          "10.0.0.0/8",
+          "127.0.0.0/8",
+          "172.16.0.0/12",
+          "192.168.0.0/16"
+        ]
       }
     ]
-  },
-  "stats": {}
+  }
 }
