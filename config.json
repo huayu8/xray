@@ -11,7 +11,7 @@
       "settings": {
         "clients": [
           {
-            "alterId": 64,
+            "alterId": 4,
             "security": "none",
             "id": "b6642395-c58d-47bb-eb8c-87832271b4e7"
           }
@@ -44,17 +44,6 @@
         "type": "field",
         "outboundTag": "block",
         "protocol": ["bittorrent"]
-      },
-      {
-        "type": "field",
-        "outboundTag": "block",
-        "ip": [
-          "0.0.0.0/8",
-          "10.0.0.0/8",
-          "127.0.0.0/8",
-          "172.16.0.0/12",
-          "192.168.0.0/16"
-        ]
       }
     ]
   }
