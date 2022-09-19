@@ -1,43 +1,52 @@
 #!/bin/sh
 #
-# This is a Shell script for build multi-architectures xray binary file
+# This is a Shell script for xray based alpine with Docker image
 # 
-# Supported architectures: amd64, arm32v6, arm32v7, arm64v8, i386, ppc64le, s390x
-# 
-# Copyright (C) 2020 Teddysun <i@teddysun.com>
+# Copyright (C) 2019 - 2020 Teddysun <i@teddysun.com>
 #
 # Reference URL:
 # https://github.com/XTLS/Xray-core
 
-cur_dir="$(pwd)"
+PLATFORM=$1
+if [ -z "$PLATFORM" ]; then
+    ARCH="amd64"
+else
+    case "$PLATFORM" in
+        linux/386)
+            ARCH="386"
+            ;;
+        linux/amd64)
+            ARCH="amd64"
+            ;;
+        linux/arm/v6)
+            ARCH="arm6"
+            ;;
+        linux/arm/v7)
+            ARCH="arm7"
+            ;;
+        linux/arm64|linux/arm64/v8)
+            ARCH="arm64"
+            ;;
+        linux/ppc64le)
+            ARCH="ppc64le"
+            ;;
+        linux/s390x)
+            ARCH="s390x"
+            ;;
+        *)
+            ARCH=""
+            ;;
+    esac
+fi
+[ -z "${ARCH}" ] && echo "Error: Not supported OS Architecture" && exit 1
+# Download binary file
+XRAY_FILE="xray_linux_${ARCH}"
 
-COMMANDS=( git go )
-for CMD in "${COMMANDS[@]}"; do
-    if [ ! "$(command -v "${CMD}")" ]; then
-        echo "${CMD} is not installed, please install it and try again" && exit 1
-    fi
-done
+echo "Downloading binary file: ${XRAY_FILE}"
+wget -O /usr/bin/xray https://dl.lamp.sh/files/${XRAY_FILE} > /dev/null 2>&1
+if [ $? -ne 0 ]; then
+    echo "Error: Failed to download binary file: ${XRAY_FILE}" && exit 1
+fi
+echo "Download binary file: ${XRAY_FILE} completed"
 
-cd ${cur_dir}
-git clone https://github.com/XTLS/Xray-core.git
-cd Xray-core || exit 2
-
-LDFLAGS="-s -w"
-ARCHS=( 386 amd64 arm arm64 ppc64le s390x )
-ARMS=( 6 7 )
-
-for ARCH in ${ARCHS[@]}; do
-    if [ "${ARCH}" = "arm" ]; then
-        for V in ${ARMS[@]}; do
-            echo "Building xray_linux_${ARCH}${V}"
-            env CGO_ENABLED=0 GOOS=linux GOARCH=${ARCH} GOARM=${V} go build -v -trimpath -ldflags "${LDFLAGS}" -o ${cur_dir}/xray_linux_${ARCH}${V} ./main || exit 1
-        done
-    else
-        echo "Building xray_linux_${ARCH}"
-        env CGO_ENABLED=0 GOOS=linux GOARCH=${ARCH} go build -v -trimpath -ldflags "${LDFLAGS}" -o ${cur_dir}/xray_linux_${ARCH} ./main || exit 1
-    fi
-done
-
-chmod +x ${cur_dir}/xray_linux_*
-# clean up
-cd ${cur_dir} && rm -fr Xray-core
+chmod +x /usr/bin/xray
